@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# ChromaDB local database
+chroma_db/
+
+# Documents (may contain real health data)
+documents/
+
+# Logs
+logs/
+
+# Mac junk
+.DS_Store
+
+# Environment variables
+.env
