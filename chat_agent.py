@@ -85,9 +85,17 @@ def add_document_to_store(file_path: str, category: str = "Unknown", doc_date: s
     return vectorstore
 
 
-def ask_question(vectorstore: Chroma, question: str, k: int = 5) -> str:
-    """Retrieve relevant chunks ACROSS ALL DOCUMENTS and generate a grounded answer."""
-    retriever = vectorstore.as_retriever(search_kwargs={"k": k})
+def ask_question(vectorstore: Chroma, question: str, k: int = 5, selected_files: list = None) -> str:
+    """Retrieve relevant chunks and generate a grounded answer.
+    If selected_files is provided, only search within those documents."""
+    search_kwargs = {"k": k}
+    if selected_files:
+        if len(selected_files) == 1:
+            search_kwargs["filter"] = {"source_file": selected_files[0]}
+        else:
+            search_kwargs["filter"] = {"source_file": {"$in": selected_files}}
+
+    retriever = vectorstore.as_retriever(search_kwargs=search_kwargs)
     relevant_chunks = retriever.invoke(question)
 
     if not relevant_chunks:
@@ -102,7 +110,7 @@ def ask_question(vectorstore: Chroma, question: str, k: int = 5) -> str:
 
     context = "\n\n---\n\n".join(context_parts)
 
-    print(f"\nRetrieved {len(relevant_chunks)} relevant chunks across your document archive.")
+    print(f"\nRetrieved {len(relevant_chunks)} relevant chunks.")
     for chunk in relevant_chunks:
         print(f"  - {chunk.metadata.get('source_file')} ({chunk.metadata.get('date')})")
 
@@ -111,6 +119,17 @@ def ask_question(vectorstore: Chroma, question: str, k: int = 5) -> str:
     answer = llm.invoke(prompt).strip()
 
     return answer
+
+
+def get_document_choices(vectorstore: Chroma) -> list:
+    """Return a list of (display_label, filename) tuples for use in a UI selector."""
+    docs = list_archive_documents(vectorstore)
+    docs.sort(key=lambda d: d.get("date", ""), reverse=True)
+    choices = []
+    for doc in docs:
+        label = f"{doc['filename']} — {doc['category']} ({doc['date']})"
+        choices.append((label, doc["filename"]))
+    return choices
 
 
 def list_archive_documents(vectorstore: Chroma) -> list:
