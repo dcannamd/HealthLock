@@ -127,6 +127,8 @@ def get_document_choices(vectorstore: Chroma) -> list:
     docs.sort(key=lambda d: d.get("date", ""), reverse=True)
     choices = []
     for doc in docs:
+        if not doc["filename"] or doc["filename"] == "unknown":
+            continue
         label = f"{doc['filename']} — {doc['category']} ({doc['date']})"
         choices.append((label, doc["filename"]))
     return choices

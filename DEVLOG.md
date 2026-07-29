@@ -39,3 +39,10 @@ Several paste attempts caused duplicated/nested code blocks
 ### idea
 I'm interested in adding documentation about the general health of someone my age, maybe using NoteBookLM to genereate a markdown file that can be referenced by llama 
 
+## July 19, 2026 - added .md files for reference documentation
+Here's what they actually do:
+For you right now: PROMPTS.md is your most useful file. It tracks every prompt template in the project, why it was written that way, and what needs to be fixed. When you notice the model giving a wrong answer — like calling a normal lab value "abnormal" — you open PROMPTS.md, find the relevant prompt, update the "Proposed Improvements" section, then go make that change in the actual agent file. It's your maintenance log.
+For teaching: when you eventually show this project to non-technical users, agents.md explains what each agent does in plain language. Instead of asking them to read Python code, you hand them that file. It answers "what is this app actually doing?" in terms anyone can follow.
+For your AIGP portfolio: these files demonstrate that you thought carefully about governance, failure modes, and improvement cycles — not just that you built something that works. The prompt update log in PROMPTS.md is particularly useful for this, since it shows a deliberate process of testing, observing, and improving over time.
+Bottom line: they're like a car's service manual. The car runs fine without the manual sitting in the glovebox — but when something needs fixing, you're glad it's there.
+

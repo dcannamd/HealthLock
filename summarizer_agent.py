@@ -140,7 +140,9 @@ def summarize_trend(file_paths: list, dates: list = None) -> dict:
     for path, date in zip(file_paths, dates):
         text = load_document(path)
         filename = Path(path).name
-        text_preview = text[:1500]
+        # Scale chunk size down as document count increases to stay within context window
+        chars_per_doc = min(1500, max(400, 6000 // len(file_paths)))
+        text_preview = text[:chars_per_doc]
         combined_parts.append(f"[Document: {filename} | Date: {date}]\n{text_preview}")
 
     combined_text = "\n\n===\n\n".join(combined_parts)

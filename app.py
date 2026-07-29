@@ -72,6 +72,7 @@ def handle_upload(files):
 
         document_history.insert(0, {
             "filename": filename_only,
+            "full_path": current_file_path,
             "category": category,
             "date": doc_date,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -153,12 +154,17 @@ def handle_summarize(selected_files):
         "Do not use this as a substitute for professional medical advice.*"
     )
 
+    # Build lookup of filename -> real upload path
+    path_lookup = {}
+    for d in document_history:
+        if d["filename"] not in path_lookup:
+            path_lookup[d["filename"]] = d.get("full_path")
+
     if len(selected_files) == 1:
-        # Single document — individual summary, using the original full-text path
         fname = selected_files[0]
-        # Find the original file path from document_history if available, else assume documents/ folder
-        matching = [d for d in document_history if d["filename"] == fname]
-        file_path = f"documents/{fname}"  # fallback assumption
+        file_path = path_lookup.get(fname)
+        if not file_path:
+            return f"Could not find the original file for {fname}. Please re-upload it.", "", "", "—"
 
         result = summarize_document(file_path)
 
@@ -191,7 +197,20 @@ def handle_summarize(selected_files):
 
     else:
         # Multiple documents — trend analysis
-        file_paths = [f"documents/{fname}" for fname in selected_files]
+        file_paths = []
+        missing = []
+        for fname in selected_files:
+            path = path_lookup.get(fname)
+            if path:
+                file_paths.append(path)
+            else:
+                missing.append(fname)
+
+        if missing:
+            real_missing = [f for f in missing if f and f != "unknown"]
+            if real_missing:
+                return f"Could not find original files for: {', '.join(real_missing)}. Please re-upload them.", "", "", "—"
+
         dates = [doc_lookup.get(fname, {}).get("date", "UNKNOWN") for fname in selected_files]
 
         result = summarize_trend(file_paths, dates)
